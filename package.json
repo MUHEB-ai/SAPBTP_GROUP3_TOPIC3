@@ -9,11 +9,13 @@
         "@sap/low-code-event-handler": "^1.2.5",
         "@sap/xsenv": ">=3.3.2 <3.3.3",
         "@sap/xssec": "^4.13.0",
+        "csv-parse": "^6.2.1",
+        "csv-stringify": "^6.7.0",
         "hdb": "^2.27.1",
         "passport": "^0.7.0"
     },
     "devDependencies": {
-        "@cap-js/sqlite": "^2.4",
+        "@cap-js/sqlite": "^2.4.0",
         "@sap/dev-cap-tools": "^1.31.0"
     },
     "scripts": {
@@ -25,6 +27,10 @@
     "private": true,
     "cds": {
         "requires": {
+            "db": {
+                "kind": "sqlite",
+                "credentials": { "url": "db/flights.sqlite" }
+            },
             "[production]": {
                 "db": "hana",
                 "auth": "xsuaa"
