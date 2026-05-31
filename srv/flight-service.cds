@@ -106,3 +106,24 @@ annotate FlightService.AirlineKPIs with {
   DivertedFlights  @Analytics.Measure  @Aggregation.default: #SUM;
   DelayedArrivals  @Analytics.Measure  @Aggregation.default: #SUM;
 };
+
+annotate FlightService.MonthlyKPIs with @Aggregation.ApplySupported : {
+  $Type               : 'Aggregation.ApplySupportedType',
+  Transformations     : [ 'aggregate', 'groupby', 'filter' ],
+  GroupableProperties : [ Month ],
+  AggregatableProperties : [
+    { Property: TotalFlights },
+    { Property: CancelledFlights },
+    { Property: DelayedArrivals }
+  ]
+}
+@Aggregation.CustomAggregate #TotalFlights     : 'Edm.Int32'
+@Aggregation.CustomAggregate #CancelledFlights : 'Edm.Int32'
+@Aggregation.CustomAggregate #DelayedArrivals  : 'Edm.Int32';
+
+annotate FlightService.MonthlyKPIs with {
+  Month            @Analytics.Dimension;
+  TotalFlights     @Analytics.Measure @Aggregation.default: #SUM;
+  CancelledFlights @Analytics.Measure @Aggregation.default: #SUM;
+  DelayedArrivals  @Analytics.Measure @Aggregation.default: #SUM;
+};
