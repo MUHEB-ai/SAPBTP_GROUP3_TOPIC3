@@ -75,3 +75,43 @@ entity ReportingFlights {
       SecurityDelay     : Decimal(8,2);
       LateAircraftDelay : Decimal(8,2);
 }
+
+// Materialisierte KPI-Tabellen (einmal aus den Rohdaten berechnet)
+entity MAirlineKPIs {
+  key Airline          : String(7);
+      TotalFlights     : Integer;
+      CancelledFlights : Integer;
+      DivertedFlights  : Integer;
+      DelayedArrivals  : Integer;
+      OnTimePct        : Decimal(5,1);
+      CancellationPct  : Decimal(5,1);
+      AvgArrDelay      : Decimal(6,1);
+}
+
+entity MMonthlyKPIs {
+  key Month            : Integer;
+      TotalFlights     : Integer;
+      CancelledFlights : Integer;
+      DelayedArrivals  : Integer;
+      OnTimePct        : Decimal(5,1);
+      CancellationPct  : Decimal(5,1);
+      AvgArrDelay      : Decimal(6,1);
+}
+
+entity MWeekdayKPIs {
+  key DayOfWeek        : Integer;
+      TotalFlights     : Integer;
+      CancelledFlights : Integer;
+      DelayedArrivals  : Integer;
+      OnTimePct        : Decimal(5,1);
+      AvgArrDelay      : Decimal(6,1);
+}
+
+entity MBrandVsOperator {
+  key Brand            : String(7);
+  key Operator         : String(7);
+      TotalFlights     : Integer;
+      DelayedArrivals  : Integer;
+      OnTimePct        : Decimal(5,1);
+      AvgArrDelay      : Decimal(6,1);
+}
