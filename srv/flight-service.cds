@@ -102,3 +102,8 @@ annotate FlightService.BrandVsOperator with {
   TotalFlights    @Analytics.Measure @Aggregation.default: #SUM;
   DelayedArrivals @Analytics.Measure @Aggregation.default: #SUM;
 };
+
+annotate FlightService.AirlineKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
+annotate FlightService.MonthlyKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
+annotate FlightService.WeekdayKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
+annotate FlightService.BrandVsOperator with { DelayedArrivals @title: 'Delayed Arrivals'; };
