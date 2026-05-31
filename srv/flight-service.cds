@@ -50,23 +50,23 @@ view CalcAirlineKPIs as select from AggAirlineKPIs {
 
 view CalcMonthlyKPIs as select from AggMonthlyKPIs {
   Month, TotalFlights, CancelledFlights, DelayedArrivals,
-  cast( (TotalFlights - CancelledFlights - DelayedArrivals) * 100.0
-        / nullif(TotalFlights - CancelledFlights, 0) as Decimal(5,2) ) as OnTimePct      : Decimal(5,2),
-  cast( CancelledFlights * 100.0 / nullif(TotalFlights, 0) as Decimal(5,2) ) as CancellationPct : Decimal(5,2),
-  cast( SumArrDelayMin * 1.0 / nullif(TotalFlights - CancelledFlights, 0) as Decimal(8,2) ) as AvgArrDelay : Decimal(8,2)
+  cast( round( (TotalFlights - CancelledFlights - DelayedArrivals) * 100.0
+        / nullif(TotalFlights - CancelledFlights, 0), 1) as Decimal(5,1) ) as OnTimePct       : Decimal(5,1),
+  cast( round( CancelledFlights * 100.0 / nullif(TotalFlights, 0), 1) as Decimal(5,1) ) as CancellationPct : Decimal(5,1),
+  cast( round( SumArrDelayMin * 1.0 / nullif(TotalFlights - CancelledFlights, 0), 1) as Decimal(6,1) ) as AvgArrDelay : Decimal(6,1)
 };
 
 view CalcWeekdayKPIs as select from AggWeekdayKPIs {
   DayOfWeek, TotalFlights, CancelledFlights, DelayedArrivals,
-  cast( (TotalFlights - CancelledFlights - DelayedArrivals) * 100.0
-        / nullif(TotalFlights - CancelledFlights, 0) as Decimal(5,2) ) as OnTimePct      : Decimal(5,2),
-  cast( SumArrDelayMin * 1.0 / nullif(TotalFlights - CancelledFlights, 0) as Decimal(8,2) ) as AvgArrDelay : Decimal(8,2)
+  cast( round( (TotalFlights - CancelledFlights - DelayedArrivals) * 100.0
+        / nullif(TotalFlights - CancelledFlights, 0), 1) as Decimal(5,1) ) as OnTimePct       : Decimal(5,1),
+  cast( round( SumArrDelayMin * 1.0 / nullif(TotalFlights - CancelledFlights, 0), 1) as Decimal(6,1) ) as AvgArrDelay : Decimal(6,1)
 };
 
 view CalcBrandVsOperator as select from AggBrandVsOperator {
   Brand, Operator, TotalFlights, DelayedArrivals,
-  cast( (TotalFlights - DelayedArrivals) * 100.0 / nullif(TotalFlights, 0) as Decimal(5,2) ) as OnTimePct  : Decimal(5,2),
-  cast( SumArrDelayMin * 1.0 / nullif(TotalFlights, 0) as Decimal(8,2) ) as AvgArrDelay : Decimal(8,2)
+  cast( round( (TotalFlights - DelayedArrivals) * 100.0 / nullif(TotalFlights, 0), 1) as Decimal(5,1) ) as OnTimePct  : Decimal(5,1),
+  cast( round( SumArrDelayMin * 1.0 / nullif(TotalFlights, 0), 1) as Decimal(6,1) ) as AvgArrDelay : Decimal(6,1)
 };
 
 // ===== Service =====
