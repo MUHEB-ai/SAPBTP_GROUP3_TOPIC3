@@ -25,7 +25,8 @@
     "start-local": "npm run generate-entry-point && npm run cds-watch",
     "generate-entry-point": "dev-cap-tools gen-entrypoint",
     "cds-watch": "cds watch --open",
-    "watch-airlinedashboard": "cds watch --open ns.airlinedashboard/index.html?sap-ui-xx-viewCache=false --livereload false"
+    "watch-airlinedashboard": "cds watch --open ns.airlinedashboard/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-monthlytrend": "cds watch --open ns.monthlytrend/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "private": true,
   "cds": {
@@ -55,6 +56,7 @@
     "app/*"
   ],
   "sapux": [
-    "app/airlinedashboard"
+    "app/airlinedashboard",
+    "app/monthlytrend"
   ]
 }
