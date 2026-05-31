@@ -27,7 +27,8 @@
     "cds-watch": "cds watch --open",
     "watch-airlinedashboard": "cds watch --open ns.airlinedashboard/index.html?sap-ui-xx-viewCache=false --livereload false",
     "watch-monthlytrend": "cds watch --open ns.monthlytrend/index.html?sap-ui-xx-viewCache=false --livereload false",
-    "watch-weekdaytrend": "cds watch --open ns.weekdaytrend/index.html?sap-ui-xx-viewCache=false --livereload false"
+    "watch-weekdaytrend": "cds watch --open ns.weekdaytrend/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-brandoperator": "cds watch --open ns.brandoperator/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "private": true,
   "cds": {
@@ -59,6 +60,7 @@
   "sapux": [
     "app/airlinedashboard",
     "app/monthlytrend",
-    "app/weekdaytrend"
+    "app/weekdaytrend",
+    "app/brandoperator"
   ]
 }
