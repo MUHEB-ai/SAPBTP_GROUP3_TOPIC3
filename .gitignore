@@ -26,3 +26,7 @@ env/
 # Flugdaten (regenerierbar via transform.js)
 data-raw/
 db/data/
+
+# SQLite WAL/SHM
+*.sqlite-shm
+*.sqlite-wal
