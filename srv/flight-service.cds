@@ -79,3 +79,27 @@ service FlightService {
   @readonly entity WeekdayKPIs     as projection on CalcWeekdayKPIs;
   @readonly entity BrandVsOperator as projection on CalcBrandVsOperator;
 }
+
+annotate FlightService.AirlineKPIs with @Aggregation.ApplySupported : {
+  $Type               : 'Aggregation.ApplySupportedType',
+  Transformations     : [ 'aggregate', 'groupby', 'filter' ],
+  GroupableProperties : [ Airline ],
+  AggregatableProperties : [
+    { Property: TotalFlights },
+    { Property: CancelledFlights },
+    { Property: DivertedFlights },
+    { Property: DelayedArrivals }
+  ]
+}
+@Aggregation.CustomAggregate #TotalFlights     : 'Edm.Int32'
+@Aggregation.CustomAggregate #CancelledFlights : 'Edm.Int32'
+@Aggregation.CustomAggregate #DivertedFlights  : 'Edm.Int32'
+@Aggregation.CustomAggregate #DelayedArrivals  : 'Edm.Int32';
+
+annotate FlightService.AirlineKPIs with {
+  Airline          @Analytics.Dimension;
+  TotalFlights     @Analytics.Measure  @Aggregation.default: #SUM;
+  CancelledFlights @Analytics.Measure  @Aggregation.default: #SUM;
+  DivertedFlights  @Analytics.Measure  @Aggregation.default: #SUM;
+  DelayedArrivals  @Analytics.Measure  @Aggregation.default: #SUM;
+};
