@@ -115,3 +115,23 @@ entity MBrandVsOperator {
       OnTimePct        : Decimal(5,1);
       AvgArrDelay      : Decimal(6,1);
 }
+
+// ===== Task 2: Classification =====
+
+entity MCarrierClassification {
+  key Airline          : String(7);
+      TotalFlights     : Integer;
+      OnTimePct        : Decimal(5,1);
+      CancellationPct  : Decimal(5,1);
+      AvgArrDelay      : Decimal(6,1);
+      ReliabilityTier  : String(15);   // Excellent, Good, AtRisk, Poor
+      TierCriticality  : Integer;      // 3=green, 2=yellow, 1=red, 0=grey
+}
+
+entity MFlightDelayClassification {
+  key Category         : String(15);   // OnTime, Minor, Moderate, Severe, Critical
+      FlightCount      : Integer;
+      Percentage       : Decimal(5,1);
+      AvgDelay         : Decimal(6,1);
+      Criticality      : Integer;
+}

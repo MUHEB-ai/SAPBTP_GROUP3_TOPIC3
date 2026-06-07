@@ -10,6 +10,8 @@ service FlightService {
   @readonly entity MonthlyKPIs     as projection on fa.MMonthlyKPIs;
   @readonly entity WeekdayKPIs     as projection on fa.MWeekdayKPIs;
   @readonly entity BrandVsOperator as projection on fa.MBrandVsOperator;
+  @readonly entity CarrierClassification      as projection on fa.MCarrierClassification;
+  @readonly entity FlightDelayClassification  as projection on fa.MFlightDelayClassification;
 }
 
 // ===== analytische Annotationen (für die ALPs) =====
@@ -107,3 +109,34 @@ annotate FlightService.AirlineKPIs     with { DelayedArrivals @title: 'Delayed A
 annotate FlightService.MonthlyKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
 annotate FlightService.WeekdayKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
 annotate FlightService.BrandVsOperator with { DelayedArrivals @title: 'Delayed Arrivals'; };
+
+// --- CarrierClassification ---
+annotate FlightService.CarrierClassification with @(
+  UI.HeaderInfo: {
+    TypeName: 'Carrier',
+    TypeNamePlural: 'Carrier Classification'
+  },
+  UI.LineItem: [
+    { Value: Airline,         Label: 'Airline Code' },
+    { Value: ReliabilityTier, Label: 'Reliability Tier', Criticality: TierCriticality },
+    { Value: OnTimePct,       Label: 'On-Time %' },
+    { Value: CancellationPct, Label: 'Cancellation %' },
+    { Value: AvgArrDelay,     Label: 'Avg Arrival Delay (min)' },
+    { Value: TotalFlights,    Label: 'Total Flights' }
+  ],
+  UI.SelectionFields: [ Airline, ReliabilityTier ]
+);
+
+// --- FlightDelayClassification ---
+annotate FlightService.FlightDelayClassification with @(
+  UI.HeaderInfo: {
+    TypeName: 'Delay Category',
+    TypeNamePlural: 'Flight Delay Classification'
+  },
+  UI.LineItem: [
+    { Value: Category,    Label: 'Delay Category', Criticality: Criticality },
+    { Value: FlightCount, Label: 'Number of Flights' },
+    { Value: Percentage,  Label: '% of All Flights' },
+    { Value: AvgDelay,    Label: 'Avg Delay (min)' }
+  ]
+);
