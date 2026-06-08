@@ -120,8 +120,6 @@ over the full-year dataset.
 
 ---
 
----
-
 ## Task 2 — Classification
 
 Two classification dashboards provide structured performance categorization:
