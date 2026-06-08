@@ -24,19 +24,21 @@ Visualization) deliverables; Tasks 2–4 build on the same backend.
 
 ```
 .
-├── app/                      # Fiori Elements dashboards (one per Task 1 sub-view)
-│   ├── airlinedashboard/     #   KPIs per airline (column chart + table)
-│   ├── monthlytrend/         #   On-time trend by month (line chart)
-│   ├── weekdaytrend/         #   On-time trend by weekday (line chart)
-│   └── brandoperator/        #   Marketing brand vs. operating carrier (column chart)
+├── app/                          # Fiori Elements dashboards
+│   ├── airlinedashboard/         #   Task 1: KPIs per airline
+│   ├── monthlytrend/             #   Task 1: On-time trend by month
+│   ├── weekdaytrend/             #   Task 1: On-time trend by weekday
+│   ├── brandoperator/            #   Task 1: Brand vs. operator comparison
+│   ├── carrierclassification/    #   Task 2: Carrier reliability tiers
+│   └── delayseverity/            #   Task 2: Flight delay severity distribution
 ├── db/
-│   ├── schema.cds            # Data model: raw flight tables + materialized KPI tables
-│   └── data/                 # Lean transformed CSVs (git-ignored)
+│   ├── schema.cds                # Data model: raw tables + KPI + classification tables
+│   └── data/                     # Lean transformed CSVs (git-ignored)
 ├── srv/
-│   └── flight-service.cds    # OData service + analytical annotations
-├── transform.js              # Stream-transforms raw DOT CSVs into the lean schema
-├── load-db.js                # Streaming import of the lean CSVs into SQLite
-├── materialize.js            # Pre-computes the four KPI aggregate tables
+│   └── flight-service.cds        # OData service + analytical annotations
+├── transform.js                  # Stream-transforms raw DOT CSVs into the lean schema
+├── load-db.js                    # Streaming import of the lean CSVs into SQLite
+├── materialize.js                # Pre-computes KPI aggregates + classification tables
 └── package.json
 ```
 
@@ -117,6 +119,34 @@ Each dashboard exposes an interactive filter, a chart, and a sortable KPI table
 over the full-year dataset.
 
 ---
+
+---
+
+## Task 2 — Classification
+
+Two classification dashboards provide structured performance categorization:
+
+| Dashboard | Entity | Classification Logic | Insight |
+|---|---|---|---|
+| Carrier reliability | `CarrierClassification` | Tiers based on on-time %, cancellation rate | All 10 carriers fall in "Good" tier (70–85% on-time, <3% cancellation); DL leads at 81.1% |
+| Delay severity | `FlightDelayClassification` | DOT-aligned thresholds: OnTime/Minor/Moderate/Severe/Critical/Cancelled | 62.9% on-time, 15.7% minor, 10.8% moderate, 7.1% severe, 3.3% critical, 1.4% cancelled |
+
+**Classification thresholds (Carrier Reliability):**
+- **Excellent**: On-time ≥ 85%, cancellation < 1%
+- **Good**: On-time ≥ 70%, cancellation < 3%
+- **At Risk**: On-time ≥ 50%
+- **Poor**: On-time < 50% or cancellation ≥ 5%
+
+**Classification thresholds (Delay Severity):**
+- **OnTime**: ArrDelayMinutes ≤ 0 | **Minor**: 1–15 min | **Moderate**: 16–45 min
+- **Severe**: 46–120 min | **Critical**: >120 min | **Cancelled**: flight cancelled
+
+Thresholds align with the U.S. DOT standard, which considers arrivals >15 minutes
+late as "delayed."
+
+---
+
+
 
 ## Architectural Decisions
 
