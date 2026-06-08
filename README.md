@@ -138,8 +138,24 @@ performance differences.
 
 ---
 
-## Version Control
+## Version Control & Branching Strategy
 
-- **`main`** — stable, presentable state.
-- **`dev`** — working branch; all feature development happens here and is merged
-  into `main` at milestones.
+- **`main`** — Stable, presentable state. Only receives merges from `dev` at
+  milestones (midterm, endterm). Tagged with version numbers (e.g. `v1.0-midterm`).
+- **`dev`** — Active development branch. All feature work happens here.
+  Team members pull from and push to `dev` daily.
+- **Feature workflow**: For larger features, members create short-lived branches
+  off `dev` (e.g. `task2-classification`), then merge back via pull request or
+  direct merge.
+
+### Commit History
+
+| Date | Author | Description |
+|------|--------|-------------|
+| June 2026 | Muheb | Task 1: Data pipeline, schema, materialized KPIs, Fiori dashboards |
+| June 2026 | Yogesh | Task 2: Carrier classification & flight delay severity classification |
+| June 2026 | Hemant | Task 2: Carrier classification & flight delay severity classification |
+
+### Milestone Merges
+
+- **Midterm (12.06.2026)**: `dev` → `main`, tagged `v1.0-midterm`
