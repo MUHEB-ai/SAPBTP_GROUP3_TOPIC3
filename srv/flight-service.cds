@@ -154,6 +154,8 @@ annotate FlightService.AIAuditReports with @(
     Title: { Value: Airline },
     Description: { Value: DelayScenario }
   },
+  UI.CreateHidden: false,
+  Capabilities.InsertRestrictions: { Insertable: true },
   UI.LineItem: [
     { Value: Airline,         Label: 'Airline' },
     { Value: ReliabilityTier, Label: 'Tier' },
@@ -161,9 +163,16 @@ annotate FlightService.AIAuditReports with @(
     { Value: CreatedAt,       Label: 'Created' }
   ],
   UI.Facets: [
+    { $Type: 'UI.ReferenceFacet', Label: 'Delay Input', Target: '@UI.FieldGroup#Input' },
     { $Type: 'UI.ReferenceFacet', Label: 'AI Reasoning', Target: '@UI.FieldGroup#AIReasoning' },
     { $Type: 'UI.ReferenceFacet', Label: 'Recovery Strategy', Target: '@UI.FieldGroup#Recovery' }
   ],
+  UI.FieldGroup#Input: {
+    Data: [
+      { Value: Airline, Label: 'Airline Code' },
+      { Value: DelayScenario, Label: 'Describe the Delay Scenario' }
+    ]
+  },
   UI.FieldGroup#AIReasoning: {
     Data: [{ Value: AIReasoning, Label: 'AI Analysis' }]
   },

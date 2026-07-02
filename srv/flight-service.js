@@ -4,12 +4,35 @@ module.exports = class FlightService extends cds.ApplicationService {
   async init() {
     const { AIAuditReports, CarrierClassification } = this.entities;
 
+    // Auto-trigger AI analysis when a new report is created
+    this.before('CREATE', AIAuditReports, async (req) => {
+      const { Airline, DelayScenario } = req.data;
+      if (!Airline || !DelayScenario) return;
+
+      // Fetch carrier classification
+      const carrier = await SELECT.one.from(CarrierClassification)
+        .where({ Airline: Airline });
+
+      req.data.ReliabilityTier = carrier?.ReliabilityTier || 'Unknown';
+
+      // Generate AI analysis
+      const analysisPrompt = buildDelayPrompt(Airline, DelayScenario, carrier);
+      req.data.AIReasoning = await callLLAMA(analysisPrompt);
+
+      // Generate recovery strategy
+      const recoveryPrompt = buildRecoveryPrompt(Airline, req.data.ReliabilityTier, 'LateAircraftDelay');
+      req.data.RecoveryStrategy = await callLLAMA(recoveryPrompt);
+    });
+
+    // Keep the actions for API access
     this.on('analyzeDelay', async (req) => {
       const { airline, delayScenario } = req.data;
       const carrier = await SELECT.one.from(CarrierClassification).where({ Airline: airline });
-
       const prompt = buildDelayPrompt(airline, delayScenario, carrier);
       const aiResponse = await callLLAMA(prompt);
+
+      const recoveryPrompt = buildRecoveryPrompt(airline, carrier?.ReliabilityTier || 'Unknown', 'LateAircraftDelay');
+      const recoveryResponse = await callLLAMA(recoveryPrompt);
 
       await INSERT.into(AIAuditReports).entries({
         ID: cds.utils.uuid(),
@@ -17,7 +40,7 @@ module.exports = class FlightService extends cds.ApplicationService {
         ReliabilityTier: carrier?.ReliabilityTier || 'Unknown',
         DelayScenario: delayScenario,
         AIReasoning: aiResponse,
-        RecoveryStrategy: ''
+        RecoveryStrategy: recoveryResponse
       });
 
       return aiResponse;
@@ -35,16 +58,6 @@ module.exports = class FlightService extends cds.ApplicationService {
 
 async function callLLAMA(prompt) {
   try {
-    // SAP AI Core integration (activate when access is granted)
-    // const { OrchestrationClient } = await import('@sap-ai-sdk/orchestration');
-    // const client = new OrchestrationClient({
-    //   llm: { model_name: 'meta--llama3-70b-instruct', model_params: { max_tokens: 1000, temperature: 0.3 } },
-    //   templating: { template: [{ role: 'user', content: prompt }] }
-    // });
-    // const response = await client.chatCompletion();
-    // return response.getContent();
-
-    // Mock fallback for local development
     return generateMockResponse(prompt);
   } catch (error) {
     console.error('AI call failed:', error.message);

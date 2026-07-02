@@ -1,0 +1,17 @@
+{
+  "name": "ns.aiaudit",
+  "version": "0.0.1",
+  "description": "AI Audit Dashboard",
+  "sapux": true,
+  "sapuxLayer": "CUSTOMER_BASE",
+  "scripts": {
+    "start": "fiori run"
+  },
+  "devDependencies": {
+    "@sap/ux-specification": "latest",
+    "@sap/ux-ui5-tooling": "^1.27.0"
+  },
+  "sapFiori": {
+    "registrationIds": []
+  }
+}
