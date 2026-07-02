@@ -12,6 +12,11 @@ service FlightService {
   @readonly entity BrandVsOperator as projection on fa.MBrandVsOperator;
   @readonly entity CarrierClassification      as projection on fa.MCarrierClassification;
   @readonly entity FlightDelayClassification  as projection on fa.MFlightDelayClassification;
+
+  entity AIAuditReports as projection on fa.AIAuditReports;
+
+  action analyzeDelay(airline: String, delayScenario: String) returns String;
+  action generateRecovery(airline: String, reliabilityTier: String, delayType: String) returns String;
 }
 
 // ===== analytische Annotationen (für die ALPs) =====
@@ -139,4 +144,30 @@ annotate FlightService.FlightDelayClassification with @(
     { Value: Percentage,  Label: '% of All Flights' },
     { Value: AvgDelay,    Label: 'Avg Delay (min)' }
   ]
+);
+
+// --- AIAuditReports ---
+annotate FlightService.AIAuditReports with @(
+  UI.HeaderInfo: {
+    TypeName: 'AI Audit Report',
+    TypeNamePlural: 'AI Audit Reports',
+    Title: { Value: Airline },
+    Description: { Value: DelayScenario }
+  },
+  UI.LineItem: [
+    { Value: Airline,         Label: 'Airline' },
+    { Value: ReliabilityTier, Label: 'Tier' },
+    { Value: DelayScenario,   Label: 'Delay Scenario' },
+    { Value: CreatedAt,       Label: 'Created' }
+  ],
+  UI.Facets: [
+    { $Type: 'UI.ReferenceFacet', Label: 'AI Reasoning', Target: '@UI.FieldGroup#AIReasoning' },
+    { $Type: 'UI.ReferenceFacet', Label: 'Recovery Strategy', Target: '@UI.FieldGroup#Recovery' }
+  ],
+  UI.FieldGroup#AIReasoning: {
+    Data: [{ Value: AIReasoning, Label: 'AI Analysis' }]
+  },
+  UI.FieldGroup#Recovery: {
+    Data: [{ Value: RecoveryStrategy, Label: 'Recovery Recommendations' }]
+  }
 );

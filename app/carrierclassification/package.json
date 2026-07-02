@@ -1,0 +1,12 @@
+{
+  "name": "carrierclassification",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Carrier Analytics",
+  "keywords": [
+    "ui5",
+    "openui5",
+    "sapui5"
+  ],
+  "main": "webapp/index.html"
+}

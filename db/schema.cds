@@ -135,3 +135,15 @@ entity MFlightDelayClassification {
       AvgDelay         : Decimal(6,1);
       Criticality      : Integer;
 }
+
+// ===== Task 4: AI Integration =====
+
+entity AIAuditReports {
+  key ID              : UUID;
+      Airline         : String(7);
+      ReliabilityTier : String(15);
+      DelayScenario   : String(500);
+      AIReasoning     : LargeString;
+      RecoveryStrategy: LargeString;
+      CreatedAt       : Timestamp @cds.on.insert: $now;
+}
