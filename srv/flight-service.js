@@ -58,9 +58,42 @@ module.exports = class FlightService extends cds.ApplicationService {
 
 async function callLLAMA(prompt) {
   try {
-    return generateMockResponse(prompt);
+    // Step 1: Get auth token
+    const tokenRes = await fetch('https://btpailearning.authentication.us10.hana.ondemand.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'grant_type=client_credentials&client_id=sb-6a3dc4ad-b8b6-4291-ba47-f83bde33d590!b564356|aicore!b164&client_secret=45db75f1-e067-42eb-94b3-f085511c1801$BJyItLi3-yM9hU8Cu0DG28_8e9tPBtd-7AkVFKk_2Z8='
+    });
+    const tokenData = await tokenRes.json();
+    const token = tokenData.access_token;
+
+    // Step 2: Call orchestration endpoint
+    const orchRes = await fetch('https://api.ai.prod.us-east-1.aws.ml.hana.ondemand.com/v2/inference/deployments/d31cb3d4d1d60d18/completion', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'AI-Resource-Group': 'default'
+      },
+      body: JSON.stringify({
+        orchestration_config: {
+          module_configurations: {
+            llm_module_config: {
+              model_name: 'gpt-4o-mini',
+              model_params: { max_tokens: 1500, temperature: 0.3 }
+            },
+            templating_module_config: {
+              template: [{ role: 'user', content: prompt }]
+            }
+          }
+        }
+      })
+    });
+
+    const data = await orchRes.json();
+    return data.orchestration_result?.choices?.[0]?.message?.content || 'AI analysis unavailable';
   } catch (error) {
-    console.error('AI call failed:', error.message);
+    console.error('AI Core call failed:', error.message);
     return generateMockResponse(prompt);
   }
 }
