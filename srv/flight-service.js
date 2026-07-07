@@ -16,7 +16,24 @@ module.exports = class FlightService extends cds.ApplicationService {
       req.data.ReliabilityTier = carrier?.ReliabilityTier || 'Unknown';
 
       // Generate AI analysis
-      const analysisPrompt = buildDelayPrompt(Airline, DelayScenario, carrier);
+      let delayPatterns = [];
+      try {
+        delayPatterns = await cds.run(`
+          SELECT Origin, Dest,
+            ROUND(AVG(ArrDelayMinutes),1) as AvgDelay,
+            ROUND(SUM(LateAircraftDelay)*100.0/NULLIF(SUM(ArrDelayMinutes),0),1) as LateAircraftPct,
+            ROUND(SUM(WeatherDelay)*100.0/NULLIF(SUM(ArrDelayMinutes),0),1) as WeatherPct,
+            ROUND(SUM(CarrierDelay)*100.0/NULLIF(SUM(ArrDelayMinutes),0),1) as CarrierPct,
+            COUNT(*) as FlightCount
+          FROM flightaudit_MarketingFlights
+          WHERE MarketingAirline = '${Airline}' AND ArrDelayMinutes > 15
+          GROUP BY Origin, Dest
+          ORDER BY AVG(ArrDelayMinutes) DESC
+          LIMIT 10
+        `);
+      } catch (e) { console.error('Historical data fetch failed:', e.message); }
+
+      const analysisPrompt = buildDelayPrompt(Airline, DelayScenario, carrier, delayPatterns);
       req.data.AIReasoning = await callLLAMA(analysisPrompt);
 
       // Generate recovery strategy
@@ -28,7 +45,26 @@ module.exports = class FlightService extends cds.ApplicationService {
     this.on('analyzeDelay', async (req) => {
       const { airline, delayScenario } = req.data;
       const carrier = await SELECT.one.from(CarrierClassification).where({ Airline: airline });
-      const prompt = buildDelayPrompt(airline, delayScenario, carrier);
+
+      // Fetch historical delay patterns for this airline
+      let delayPatterns = [];
+      try {
+        delayPatterns = await cds.run(`
+          SELECT Origin, Dest,
+            ROUND(AVG(ArrDelayMinutes),1) as AvgDelay,
+            ROUND(SUM(LateAircraftDelay)*100.0/NULLIF(SUM(ArrDelayMinutes),0),1) as LateAircraftPct,
+            ROUND(SUM(WeatherDelay)*100.0/NULLIF(SUM(ArrDelayMinutes),0),1) as WeatherPct,
+            ROUND(SUM(CarrierDelay)*100.0/NULLIF(SUM(ArrDelayMinutes),0),1) as CarrierPct,
+            COUNT(*) as FlightCount
+          FROM flightaudit_MarketingFlights
+          WHERE MarketingAirline = '${airline}' AND ArrDelayMinutes > 15
+          GROUP BY Origin, Dest
+          ORDER BY AVG(ArrDelayMinutes) DESC
+          LIMIT 10
+        `);
+      } catch (e) { console.error('Historical data fetch failed:', e.message); }
+
+      const prompt = buildDelayPrompt(airline, delayScenario, carrier, delayPatterns);
       const aiResponse = await callLLAMA(prompt);
 
       const recoveryPrompt = buildRecoveryPrompt(airline, carrier?.ReliabilityTier || 'Unknown', 'LateAircraftDelay');
@@ -139,15 +175,39 @@ Based on the carrier's reliability tier and historical patterns, this scenario h
 - If Carrier (maintenance): review the aircraft's maintenance log for recurring issues`;
 }
 
-function buildDelayPrompt(airline, scenario, carrier) {
+function buildDelayPrompt(airline, scenario, carrier, delayPatterns) {
   const context = carrier
     ? `Carrier ${airline} is classified as "${carrier.ReliabilityTier}" tier with ${carrier.OnTimePct}% on-time rate, ${carrier.CancellationPct}% cancellation rate, and average arrival delay of ${carrier.AvgArrDelay} minutes.`
     : `Carrier ${airline} data not available.`;
+
+  const historical = delayPatterns && delayPatterns.length > 0
+    ? delayPatterns.map(r => `${r.Origin}-${r.Dest}: Avg delay ${r.AvgDelay}min, ${r.FlightCount} delayed flights (Late Aircraft: ${r.LateAircraftPct}%, Weather: ${r.WeatherPct}%, Carrier: ${r.CarrierPct}%)`).join('\n')
+    : 'No historical data available.';
 
   return `You are an airline operations control specialist analyzing U.S. domestic flight performance data.
 
 CARRIER CONTEXT:
 ${context}
+
+HISTORICAL DELAY PATTERNS FOR ${airline} (Top 10 most delayed routes):
+${historical}
+
+FEW-SHOT EXAMPLES OF DELAY ANALYSIS:
+
+Example 1: CarrierDelay of 45 min at ORD for UA
+- Root cause: Maintenance issue (carrier-controlled)
+- Propagation: 2 downstream flights delayed, crew approaching duty limits
+- Recovery: Aircraft swap from standby pool at ORD hub
+
+Example 2: NASDelay of 30 min at ATL for DL
+- Root cause: Air traffic control ground stop
+- Propagation: Affects all carriers at ATL, not airline-specific
+- Recovery: Limited airline control; focus on passenger rebooking
+
+Example 3: LateAircraftDelay of 90 min at DFW for AA
+- Root cause: Previous flight delayed, cascading through rotation
+- Propagation: 3-4 downstream flights affected over 8 hours
+- Recovery: Break the delay chain with aircraft swap at next hub
 
 DELAY SCENARIO:
 ${scenario}
@@ -157,6 +217,7 @@ TASK: Analyze the ripple effects of this delay scenario. Consider:
 2. Which downstream flights and connections are most at risk?
 3. What is the estimated cascading delay impact over the next 6-12 hours?
 4. How does this carrier's reliability tier affect the severity assessment?
+5. What do the historical delay patterns for this carrier's routes suggest about recurring issues?
 
 Provide a structured operational analysis using aviation terminology (rotation, block time, hub connectivity, crew duty limits, minimum connection time).`;
 }
