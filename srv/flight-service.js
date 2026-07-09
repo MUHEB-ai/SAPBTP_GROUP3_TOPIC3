@@ -78,7 +78,7 @@ module.exports = class FlightService extends cds.ApplicationService {
         AIReasoning: aiResponse,
         RecoveryStrategy: recoveryResponse
       });
-
+      req.info(aiResponse);
       return aiResponse;
     });
 

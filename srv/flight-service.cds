@@ -157,6 +157,11 @@ annotate FlightService.AIAuditReports with @(
   UI.CreateHidden: false,
   Capabilities.InsertRestrictions: { Insertable: true },
   UI.LineItem: [
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'FlightService.EntityContainer/analyzeDelay',
+      Label: 'Analyze Delay'
+    },
     { Value: Airline,         Label: 'Airline' },
     { Value: ReliabilityTier, Label: 'Tier' },
     { Value: DelayScenario,   Label: 'Delay Scenario' },

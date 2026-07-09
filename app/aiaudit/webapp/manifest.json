@@ -58,7 +58,6 @@
               "contextPath": "/AIAuditReports",
               "variantManagement": "Page",
               "initialLoad": "Enabled",
-              "creationMode": { "name": "NewPage" },
               "navigation": {
                 "AIAuditReports": {
                   "detail": { "route": "AIAuditReportsObjectPage" }
