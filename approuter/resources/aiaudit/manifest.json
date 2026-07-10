@@ -1,0 +1,127 @@
+{
+	"_version": "1.85.0",
+	"sap.app": {
+		"id": "ns.aiaudit",
+		"type": "application",
+		"applicationVersion": {
+			"version": "0.0.1"
+		},
+		"title": "AI Operations Control Agent",
+		"description": "AI-Enhanced Delay Analysis & Recovery",
+		"dataSources": {
+			"mainService": {
+				"uri": "/odata/v4/flight/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "4.0"
+				}
+			}
+		},
+		"i18n": {
+			"bundleUrl": "i18n/i18n.properties",
+			"supportedLocales": [
+				""
+			]
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"flexEnabled": true,
+		"dependencies": {
+			"minUI5Version": "1.148.1",
+			"libs": {
+				"sap.m": {},
+				"sap.ui.core": {},
+				"sap.fe.templates": {}
+			}
+		},
+		"models": {
+			"": {
+				"dataSource": "mainService",
+				"preload": true,
+				"settings": {
+					"operationMode": "Server",
+					"autoExpandSelect": true,
+					"earlyRequests": true
+				}
+			},
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "ns.aiaudit.i18n.i18n",
+					"supportedLocales": [
+						""
+					]
+				}
+			}
+		},
+		"routing": {
+			"routes": [
+				{
+					"pattern": ":?query:",
+					"name": "AIAuditReportsList",
+					"target": "AIAuditReportsList"
+				},
+				{
+					"pattern": "AIAuditReports({key}):?query:",
+					"name": "AIAuditReportsObjectPage",
+					"target": "AIAuditReportsObjectPage"
+				}
+			],
+			"targets": {
+				"AIAuditReportsList": {
+					"type": "Component",
+					"id": "AIAuditReportsList",
+					"name": "sap.fe.templates.ListReport",
+					"options": {
+						"settings": {
+							"contextPath": "/AIAuditReports",
+							"variantManagement": "Page",
+							"initialLoad": "Enabled",
+							"navigation": {
+								"AIAuditReports": {
+									"detail": {
+										"route": "AIAuditReportsObjectPage"
+									}
+								}
+							}
+						}
+					}
+				},
+				"AIAuditReportsObjectPage": {
+					"type": "Component",
+					"id": "AIAuditReportsObjectPage",
+					"name": "sap.fe.templates.ObjectPage",
+					"options": {
+						"settings": {
+							"contextPath": "/AIAuditReports",
+							"editableHeaderContent": true,
+							"content": {
+								"header": {
+									"visible": true
+								},
+								"body": {
+									"sapObjectPage": {
+										"showAnchorBar": true
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"flexBundle": false
+	},
+	"sap.fiori": {
+		"registrationIds": [],
+		"archeType": "transactional"
+	}
+}

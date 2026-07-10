@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/ListReport"],function(t){"use strict";var r={actions:{},assertions:{}};return new t({appId:"ns.brandoperator",componentId:"BrandVsOperatorList",contextPath:"/BrandVsOperator"},r)});
+//# sourceMappingURL=BrandVsOperatorList.js.map

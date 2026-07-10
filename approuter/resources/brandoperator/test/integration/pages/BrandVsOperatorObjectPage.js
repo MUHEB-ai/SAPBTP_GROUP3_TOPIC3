@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/ObjectPage","sap/ui/test/actions/Press"],function(t,e){"use strict";var n={actions:{iPressSectionIconTabFilterButton:function(t){return this.waitFor({id:new RegExp(`.*--fe::FacetSection::${t}-anchor$`),actions:new e})}},assertions:{}};return new t({appId:"ns.brandoperator",componentId:"BrandVsOperatorObjectPage",contextPath:"/BrandVsOperator"},n)});
+//# sourceMappingURL=BrandVsOperatorObjectPage.js.map

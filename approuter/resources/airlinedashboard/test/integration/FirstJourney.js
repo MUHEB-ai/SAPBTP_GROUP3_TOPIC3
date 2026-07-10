@@ -1,0 +1,2 @@
+sap.ui.define(["sap/ui/test/opaQunit","./pages/JourneyRunner"],function(e,i){"use strict";function n(){QUnit.module("First journey");e("Start application",function(e,i,n){e.iStartMyApp();n.onTheAirlineKPIsList.iSeeThisPage()});e("Navigate to ObjectPage",function(e,i,n){i.onTheAirlineKPIsList.onFilterBar().iExecuteSearch();n.onTheAirlineKPIsList.onTable().iCheckRows();i.onTheAirlineKPIsList.onTable().iPressRow(0);n.onTheAirlineKPIsObjectPage.iSeeThisPage()});e("Teardown",function(e,i,n){e.iTearDownMyApp()})}i.run([n])});
+//# sourceMappingURL=FirstJourney.js.map

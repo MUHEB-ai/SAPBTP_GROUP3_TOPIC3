@@ -32,3 +32,6 @@ db/data/
 *.sqlite-wal
 
 _archive_raw_csv/
+
+# UI5 build output (regenerable via ui5 build)
+app/*/dist/

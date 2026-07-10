@@ -1,0 +1,6 @@
+//@ui5-bundle ns/carrierclassification/Component-preload.js
+sap.ui.predefine("ns/carrierclassification/Component", ["sap/fe/core/AppComponent"],function(e){"use strict";return e.extend("ns.carrierclassification.Component",{metadata:{manifest:"json"}})});
+sap.ui.require.preload({
+	"ns/carrierclassification/manifest.json":'{"_version":"1.48.0","sap.app":{"id":"ns.carrierclassification","type":"application","title":"Carrier Classification","description":"Carrier Analytics","dataSources":{"mainService":{"uri":"/odata/v4/flight/","type":"OData","settings":{"odataVersion":"4.0"}}}},"sap.ui5":{"dependencies":{"minUI5Version":"1.120.0","libs":{"sap.m":{},"sap.fe.templates":{}}},"models":{"":{"dataSource":"mainService","preload":true,"settings":{"operationMode":"Server","autoExpandSelect":true,"earlyRequests":true}}},"routing":{"routes":[{"pattern":":?query:","name":"CarrierClassificationList","target":"CarrierClassificationList"}],"targets":{"CarrierClassificationList":{"type":"Component","id":"CarrierClassificationList","name":"sap.fe.templates.ListReport","options":{"settings":{"entitySet":"CarrierClassification","initialLoad":"Enabled"}}}}},"flexBundle":false}}'
+});
+//# sourceMappingURL=Component-preload.js.map

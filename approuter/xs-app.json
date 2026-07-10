@@ -1,5 +1,5 @@
 {
-  "welcomeFile": "/carrierclassification/index.html",
+  "welcomeFile": "/airlinedashboard/index.html",
   "authenticationMethod": "route",
   "routes": [
     {
@@ -10,9 +10,15 @@
       "csrfProtection": false
     },
     {
+      "source": "^/(airlinedashboard|monthlytrend|weekdaytrend|brandoperator|aiaudit)/(.*)$",
+      "target": "/$1/$2",
+      "localDir": "resources",
+      "authenticationType": "xsuaa"
+    },
+    {
       "source": "^/(.*)$",
       "target": "/$1",
-      "destination": "srv-api",
+      "localDir": "resources",
       "authenticationType": "xsuaa"
     }
   ]

@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/JourneyRunner","ns/brandoperator/test/integration/pages/BrandVsOperatorList","ns/brandoperator/test/integration/pages/BrandVsOperatorObjectPage"],function(e,r,t){"use strict";var a=new e({launchUrl:sap.ui.require.toUrl("ns/brandoperator")+"/test/flp.html#app-preview",pages:{onTheBrandVsOperatorList:r,onTheBrandVsOperatorObjectPage:t},async:true});return a});
+//# sourceMappingURL=JourneyRunner.js.map
