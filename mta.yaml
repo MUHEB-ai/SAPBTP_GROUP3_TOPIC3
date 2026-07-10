@@ -35,6 +35,22 @@ modules:
     requires:
       - name: Topic_3-db
 
+  - name: Topic_3-approuter
+    type: approuter.nodejs
+    path: approuter
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: Topic_3-auth
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api
+          url: ~{srv-url}
+          forwardAuthToken: true
+
 resources:
   - name: Topic_3-auth
     type: org.cloudfoundry.managed-service

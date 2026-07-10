@@ -30,3 +30,5 @@ db/data/
 # SQLite WAL/SHM
 *.sqlite-shm
 *.sqlite-wal
+
+_archive_raw_csv/
