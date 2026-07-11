@@ -1,5 +1,5 @@
 {
-  "welcomeFile": "/airlinedashboard/index.html",
+  "welcomeFile": "/flp.html",
   "authenticationMethod": "route",
   "routes": [
     {

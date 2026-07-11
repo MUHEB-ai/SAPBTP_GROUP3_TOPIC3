@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airline Operations Intelligence</title>
+<script type="text/javascript">
+window["sap-ushell-config"] = {
+  defaultRenderer: "fiori2",
+  renderers: { fiori2: { componentData: { config: {
+    enableSearch: false,
+    rootIntent: "Shell-home"
+  }}}},
+  services: {
+    "NavTargetResolution": { config: { enableClientSideTargetResolution: true } }
+  },
+  ushell: { home: { tilesWrappingType: "Normal" } },
+  applications: {}
+};
+window["sap-ushell-config"].applications = {
+  "airline-dashboard":  { additionalInformation:"", applicationType:"URL", url:"airlinedashboard/index.html", title:"On-Time Performance", description:"KPIs by airline" },
+  "monthly-trend":      { applicationType:"URL", url:"monthlytrend/index.html", title:"Monthly Delay Trends", description:"Delays month by month" },
+  "weekday-trend":      { applicationType:"URL", url:"weekdaytrend/index.html", title:"Delays by Weekday", description:"Delays by day of week" },
+  "brand-operator":     { applicationType:"URL", url:"brandoperator/index.html", title:"Brand vs Operator", description:"Marketing vs operating carrier" },
+  "carrier-class":      { applicationType:"URL", url:"carrierclassification/index.html", title:"Carrier Reliability", description:"Reliability tiers (Task 2)" },
+  "delay-severity":     { applicationType:"URL", url:"delayseverity/index.html", title:"Delay Severity", description:"Severity distribution (Task 2)" },
+  "ai-audit":           { applicationType:"URL", url:"aiaudit/index.html", title:"AI Delay Analysis", description:"AI recovery (Task 4)" }
+};
+</script>
+<script src="https://sapui5.hana.ondemand.com/1.148.1/test-resources/sap/ushell/bootstrap/sandbox.js"></script>
+<script src="https://sapui5.hana.ondemand.com/1.148.1/resources/sap-ui-core.js"
+  data-sap-ui-libs="sap.m,sap.ushell"
+  data-sap-ui-compatVersion="edge"
+  data-sap-ui-theme="sap_horizon"
+  data-sap-ui-frameOptions="allow"
+  data-sap-ui-bindingSyntax="complex"></script>
+<script type="text/javascript">
+sap.ui.getCore().attachInit(function () {
+  sap.ushell.Container.createRenderer("fiori2").placeAt("content");
+});
+</script>
+</head>
+<body class="sapUiBody" id="content"></body>
+</html>
