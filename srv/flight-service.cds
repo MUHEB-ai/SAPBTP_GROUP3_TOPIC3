@@ -17,6 +17,7 @@ service FlightService {
 
   action analyzeDelay(airline: String, delayScenario: String) returns String;
   action generateRecovery(airline: String, reliabilityTier: String, delayType: String) returns String;
+  action generateCarrierReport(airline: String) returns String;
 }
 
 // ===== analytische Annotationen (für die ALPs) =====

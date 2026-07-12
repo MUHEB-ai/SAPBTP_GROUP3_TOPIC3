@@ -1,4 +1,5 @@
 const cds = require('@sap/cds');
+const PDFDocument = require('pdfkit');
 
 module.exports = class FlightService extends cds.ApplicationService {
   async init() {
@@ -88,6 +89,11 @@ module.exports = class FlightService extends cds.ApplicationService {
       return await callLLAMA(prompt);
     });
 
+    this.on('generateCarrierReport', async (req) => {
+      const { CarrierClassification } = this.entities;
+      const carrier = await SELECT.one.from(CarrierClassification).where({ Airline: req.data.airline });
+      return await onGenerateCarrierReport(req, carrier);
+    });
     await super.init();
   }
 };
@@ -236,4 +242,101 @@ Generate specific operational recovery recommendations:
 5. PASSENGER IMPACT: Connection protection priorities and rebooking strategy
 
 Ground your recommendations in the carrier's "${reliabilityTier}" performance tier.`;
+}
+
+// ===== Management-ready PDF report =====
+async function onGenerateCarrierReport(req, carrier) {
+  const airline = req.data.airline;
+  if (!carrier) {
+    req.error(404, `No carrier found for code '${airline}'`);
+    return;
+  }
+  const summaryPrompt = buildManagementPrompt(carrier);
+  let aiSummary = await callLLAMA(summaryPrompt);
+  if (!aiSummary || aiSummary === 'AI analysis unavailable') {
+    aiSummary = `${airline} maintains an on-time arrival rate of ${carrier.OnTimePct}% with a cancellation rate of ${carrier.CancellationPct}% and an average arrival delay of ${carrier.AvgArrDelay} minutes. Under the current classification model the carrier falls in the "${carrier.ReliabilityTier}" reliability tier.`;
+  }
+  return await buildCarrierReportPdf(carrier, aiSummary);
+}
+
+function buildManagementPrompt(carrier) {
+  return `You are writing the executive summary section of a management report for airline operations leadership.
+
+CARRIER DATA:
+- Airline: ${carrier.Airline}
+- On-time arrival rate: ${carrier.OnTimePct}%
+- Cancellation rate: ${carrier.CancellationPct}%
+- Average arrival delay: ${carrier.AvgArrDelay} minutes
+- Total flights analysed: ${carrier.TotalFlights}
+- Reliability tier: ${carrier.ReliabilityTier}
+
+Write a concise executive summary of exactly three short paragraphs, suitable for senior management:
+1. Overall performance assessment based on the metrics above.
+2. Key operational risks and areas of concern.
+3. Recommended actions and priorities.
+
+Use clear business language. Do not use markdown, bullet points, or headings. Separate the three paragraphs with a blank line. Keep the whole summary under 220 words.`;
+}
+
+function buildCarrierReportPdf(carrier, aiSummary) {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
+      const chunks = [];
+      doc.on('data', c => chunks.push(c));
+      doc.on('end', () => resolve(Buffer.concat(chunks).toString('base64')));
+
+      const BLUE = '#354a5f', ACCENT = '#0a6ed1', GREY = '#6a6d70';
+
+      doc.rect(0, 0, doc.page.width, 90).fill(BLUE);
+      doc.fill('#ffffff').fontSize(22).font('Helvetica-Bold').text('Carrier Management Report', 50, 30);
+      doc.fontSize(10).font('Helvetica').fill('#c8d0d8')
+         .text('AI-Driven Operational Audit & Recovery System  |  Group 3, Topic 3', 50, 60);
+
+      doc.fill('#000000');
+      doc.y = 110;
+      doc.fontSize(18).font('Helvetica-Bold').fill(BLUE).text(`Carrier ${carrier.Airline}`);
+      doc.fontSize(9).font('Helvetica').fill(GREY)
+         .text(`Reporting period: Jan-Oct 2025   |   Generated: ${new Date().toISOString().slice(0,10)}`);
+      doc.moveDown(1);
+
+      const kpis = [
+        ['On-Time Rate', `${carrier.OnTimePct}%`],
+        ['Cancellation', `${carrier.CancellationPct}%`],
+        ['Avg Delay', `${carrier.AvgArrDelay} min`],
+        ['Total Flights', Number(carrier.TotalFlights).toLocaleString()],
+      ];
+      let x = 50; const boxW = 122, boxH = 56, gap = 8;
+      const startY = doc.y;
+      kpis.forEach(([label, val]) => {
+        doc.roundedRect(x, startY, boxW, boxH, 4).fill('#f5f6f7');
+        doc.fill(ACCENT).fontSize(15).font('Helvetica-Bold').text(val, x, startY + 12, { width: boxW, align: 'center' });
+        doc.fill(GREY).fontSize(8).font('Helvetica').text(label, x, startY + 36, { width: boxW, align: 'center' });
+        x += boxW + gap;
+      });
+      doc.y = startY + boxH + 20;
+
+      doc.fill('#000000').fontSize(13).font('Helvetica-Bold').text('Reliability Classification');
+      doc.moveDown(0.3);
+      doc.fontSize(11).font('Helvetica').fill(ACCENT).text(`Tier: ${carrier.ReliabilityTier}`, { continued: true })
+         .fill(GREY).font('Helvetica').text('   -   based on on-time and cancellation performance thresholds.');
+      doc.moveDown(1);
+
+      doc.fill('#000000').fontSize(13).font('Helvetica-Bold').text('AI Executive Summary');
+      doc.moveDown(0.3);
+      doc.fontSize(10).font('Helvetica').fill('#222222');
+      String(aiSummary).split(/\n\s*\n/).forEach(p => {
+        const t = p.trim();
+        if (t) { doc.text(t, { align: 'justify' }); doc.moveDown(0.6); }
+      });
+
+      doc.fontSize(8).fill(GREY).font('Helvetica')
+         .text('Generated by the AI-Driven Operational Audit & Recovery System on SAP BTP. Executive summary produced via SAP AI Core (gpt-4o-mini).',
+               50, doc.page.height - 60, { width: doc.page.width - 100, align: 'center' });
+
+      doc.end();
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
