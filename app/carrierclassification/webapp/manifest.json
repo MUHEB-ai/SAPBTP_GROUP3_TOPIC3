@@ -50,7 +50,24 @@
           "options": {
             "settings": {
               "entitySet": "CarrierClassification",
-              "initialLoad": "Enabled"
+              "initialLoad": "Enabled",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "actions": {
+                    "GenerateReportAction": {
+                      "press": "ns.carrierclassification.ext.ReportHandler.generateReport",
+                      "visible": true,
+                      "enabled": true,
+                      "text": "Generate Report",
+                      "requiresSelection": true,
+                      "position": {
+                        "placement": "After",
+                        "anchor": "Sort"
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
