@@ -270,70 +270,70 @@ CARRIER DATA:
 - Total flights analysed: ${carrier.TotalFlights}
 - Reliability tier: ${carrier.ReliabilityTier}
 
-Write a concise executive summary of exactly three short paragraphs, suitable for senior management:
-1. Overall performance assessment based on the metrics above.
-2. Key operational risks and areas of concern.
-3. Recommended actions and priorities.
+Write a concise executive summary of exactly two short paragraphs, suitable for senior management:
+1. Overall performance assessment and key risks based on the metrics above.
+2. Recommended actions and priorities.
 
-Use clear business language. Do not use markdown, bullet points, or headings. Separate the three paragraphs with a blank line. Keep the whole summary under 220 words.`;
+Use clear business language. Do not use markdown, bullet points, or headings. Separate the two paragraphs with a blank line. Keep the whole summary under 130 words total. Be brief and direct.`;
 }
 
 function buildCarrierReportPdf(carrier, aiSummary) {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 50, size: 'A4' });
+      const doc = new PDFDocument({ margin: 45, size: 'A4' });
       const chunks = [];
       doc.on('data', c => chunks.push(c));
       doc.on('end', () => resolve(Buffer.concat(chunks).toString('base64')));
 
+      const M = 45, W = doc.page.width - M * 2;
       const BLUE = '#354a5f', ACCENT = '#0a6ed1', GREY = '#6a6d70';
 
-      doc.rect(0, 0, doc.page.width, 90).fill(BLUE);
-      doc.fill('#ffffff').fontSize(22).font('Helvetica-Bold').text('Carrier Management Report', 50, 30);
-      doc.fontSize(10).font('Helvetica').fill('#c8d0d8')
-         .text('AI-Driven Operational Audit & Recovery System  |  Group 3, Topic 3', 50, 60);
+      doc.rect(0, 0, doc.page.width, 70).fill(BLUE);
+      doc.fill('#ffffff').fontSize(19).font('Helvetica-Bold').text('Carrier Management Report', M, 20);
+      doc.fontSize(9).font('Helvetica').fill('#c8d0d8')
+         .text('AI-Driven Operational Audit & Recovery System  |  Group 3, Topic 3', M, 46);
 
-      doc.fill('#000000');
-      doc.y = 110;
-      doc.fontSize(18).font('Helvetica-Bold').fill(BLUE).text(`Carrier ${carrier.Airline}`);
-      doc.fontSize(9).font('Helvetica').fill(GREY)
-         .text(`Reporting period: Jan-Oct 2025   |   Generated: ${new Date().toISOString().slice(0,10)}`);
-      doc.moveDown(1);
+      doc.fill('#000000'); doc.x = M; doc.y = 86;
+      doc.fontSize(16).font('Helvetica-Bold').fill(BLUE).text('Carrier ' + carrier.Airline, M, 86, { width: W });
+      doc.fontSize(8.5).font('Helvetica').fill(GREY)
+         .text('Reporting period: Jan-Oct 2025    |    Generated: ' + new Date().toISOString().slice(0, 10), M, doc.y + 1, { width: W });
+      doc.moveDown(0.9);
 
       const kpis = [
-        ['On-Time Rate', `${carrier.OnTimePct}%`],
-        ['Cancellation', `${carrier.CancellationPct}%`],
-        ['Avg Delay', `${carrier.AvgArrDelay} min`],
-        ['Total Flights', Number(carrier.TotalFlights).toLocaleString()],
+        ['On-Time Rate', carrier.OnTimePct + '%'],
+        ['Cancellation', carrier.CancellationPct + '%'],
+        ['Avg Delay', carrier.AvgArrDelay + ' min'],
+        ['Total Flights', Number(carrier.TotalFlights).toLocaleString()]
       ];
-      let x = 50; const boxW = 122, boxH = 56, gap = 8;
-      const startY = doc.y;
+      const gap = 8, boxW = (W - gap * 3) / 4, boxH = 50, rowY = doc.y;
+      let x = M;
       kpis.forEach(([label, val]) => {
-        doc.roundedRect(x, startY, boxW, boxH, 4).fill('#f5f6f7');
-        doc.fill(ACCENT).fontSize(15).font('Helvetica-Bold').text(val, x, startY + 12, { width: boxW, align: 'center' });
-        doc.fill(GREY).fontSize(8).font('Helvetica').text(label, x, startY + 36, { width: boxW, align: 'center' });
+        doc.roundedRect(x, rowY, boxW, boxH, 4).fill('#f5f6f7');
+        doc.fill(ACCENT).fontSize(13).font('Helvetica-Bold').text(val, x, rowY + 10, { width: boxW, align: 'center' });
+        doc.fill(GREY).fontSize(7.5).font('Helvetica').text(label, x, rowY + 32, { width: boxW, align: 'center' });
         x += boxW + gap;
       });
-      doc.y = startY + boxH + 20;
+      doc.x = M; doc.y = rowY + boxH + 16;
 
-      doc.fill('#000000').fontSize(13).font('Helvetica-Bold').text('Reliability Classification');
-      doc.moveDown(0.3);
-      doc.fontSize(11).font('Helvetica').fill(ACCENT).text(`Tier: ${carrier.ReliabilityTier}`, { continued: true })
-         .fill(GREY).font('Helvetica').text('   -   based on on-time and cancellation performance thresholds.');
-      doc.moveDown(1);
+      doc.fill('#000000').fontSize(12).font('Helvetica-Bold').text('Reliability Classification', M, doc.y, { width: W });
+      doc.moveDown(0.25);
+      doc.fontSize(10).font('Helvetica').fill(ACCENT).text('Tier: ' + carrier.ReliabilityTier, { continued: true })
+         .fill(GREY).text('   based on composite reliability score (on-time, cancellation, delay).');
+      doc.moveDown(0.8);
 
-      doc.fill('#000000').fontSize(13).font('Helvetica-Bold').text('AI Executive Summary');
-      doc.moveDown(0.3);
-      doc.fontSize(10).font('Helvetica').fill('#222222');
+      doc.x = M;
+      doc.fill('#000000').fontSize(12).font('Helvetica-Bold').text('AI Executive Summary', M, doc.y, { width: W });
+      doc.moveDown(0.35);
+      doc.fontSize(9.5).font('Helvetica').fill('#222222');
       String(aiSummary).split(/\n\s*\n/).forEach(p => {
         const t = p.trim();
-        if (t) { doc.text(t, { align: 'justify' }); doc.moveDown(0.6); }
+        if (t) { doc.text(t, M, doc.y, { width: W, align: 'left' }); doc.moveDown(0.55); }
       });
 
-      doc.fontSize(8).fill(GREY).font('Helvetica')
-         .text('Generated by the AI-Driven Operational Audit & Recovery System on SAP BTP. Executive summary produced via SAP AI Core (gpt-4o-mini).',
-               50, doc.page.height - 60, { width: doc.page.width - 100, align: 'center' });
-
+      doc.moveDown(1.5);
+      doc.fontSize(7.5).fill(GREY).font('Helvetica').text(
+        'Generated by the AI-Driven Operational Audit & Recovery System on SAP BTP. Executive summary via SAP AI Core (gpt-4o-mini).',
+        M, doc.y, { width: W, align: 'center' });
       doc.end();
     } catch (e) {
       reject(e);
