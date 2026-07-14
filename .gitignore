@@ -35,3 +35,4 @@ _archive_raw_csv/
 
 # UI5 build output (regenerable via ui5 build)
 app/*/dist/
+regen-carrier.js

@@ -62,41 +62,44 @@ run('MBrandVsOperator', `
 
 // ===== Task 2: Classification =====
 
-// Carrier Reliability Tiers
+// Carrier Reliability Tiers — composite score (50/30/20) + quartile (NTILE) tiers
 run('MCarrierClassification', `
   DELETE FROM flightaudit_MCarrierClassification;
   INSERT INTO flightaudit_MCarrierClassification
+  WITH per_carrier AS (
+    SELECT
+      MarketingAirline AS Airline,
+      count(*) AS TotalFlights,
+      round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
+            / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) AS OnTimePct,
+      round(sum(Cancelled) * 100.0 / nullif(count(*), 0), 1) AS CancellationPct,
+      round(sum(ArrDelayMinutes) * 1.0 / nullif(count(*) - sum(Cancelled), 0), 1) AS AvgArrDelay
+    FROM ${SRC}
+    GROUP BY MarketingAirline
+  ),
+  bounds AS (
+    SELECT MIN(OnTimePct) mnO, MAX(OnTimePct) mxO,
+           MIN(CancellationPct) mnC, MAX(CancellationPct) mxC,
+           MIN(AvgArrDelay) mnD, MAX(AvgArrDelay) mxD
+    FROM per_carrier
+  ),
+  scored AS (
+    SELECT p.Airline, p.TotalFlights, p.OnTimePct, p.CancellationPct, p.AvgArrDelay,
+      round(
+          0.5 * (CASE WHEN mxO=mnO THEN 100 ELSE (p.OnTimePct-mnO)*100.0/(mxO-mnO) END)
+        + 0.3 * (CASE WHEN mxC=mnC THEN 100 ELSE (mxC-p.CancellationPct)*100.0/(mxC-mnC) END)
+        + 0.2 * (CASE WHEN mxD=mnD THEN 100 ELSE (mxD-p.AvgArrDelay)*100.0/(mxD-mnD) END)
+      ,1) AS Score
+    FROM per_carrier p, bounds
+  ),
+  ranked AS (
+    SELECT *, NTILE(4) OVER (ORDER BY Score DESC) AS q FROM scored
+  )
   SELECT
-    MarketingAirline AS Airline,
-    count(*) AS TotalFlights,
-    round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
-          / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) AS OnTimePct,
-    round(sum(Cancelled) * 100.0 / nullif(count(*), 0), 1) AS CancellationPct,
-    round(sum(ArrDelayMinutes) * 1.0 / nullif(count(*) - sum(Cancelled), 0), 1) AS AvgArrDelay,
-    CASE
-      WHEN round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
-           / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) >= 85
-           AND sum(Cancelled) * 100.0 / count(*) < 1 THEN 'Excellent'
-      WHEN round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
-           / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) >= 70
-           AND sum(Cancelled) * 100.0 / count(*) < 3 THEN 'Good'
-      WHEN round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
-           / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) >= 50 THEN 'AtRisk'
-      ELSE 'Poor'
-    END AS ReliabilityTier,
-    CASE
-      WHEN round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
-           / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) >= 85
-           AND sum(Cancelled) * 100.0 / count(*) < 1 THEN 3
-      WHEN round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
-           / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) >= 70
-           AND sum(Cancelled) * 100.0 / count(*) < 3 THEN 2
-      WHEN round((count(*) - sum(Cancelled) - sum(Diverted) - sum(ArrDel15)) * 100.0
-           / nullif(count(*) - sum(Cancelled) - sum(Diverted), 0), 1) >= 50 THEN 1
-      ELSE 1
-    END AS TierCriticality
-  FROM ${SRC}
-  GROUP BY MarketingAirline;
+    Airline, TotalFlights, OnTimePct, CancellationPct, AvgArrDelay, Score,
+    CASE q WHEN 1 THEN 'Excellent' WHEN 2 THEN 'Good' WHEN 3 THEN 'Fair' ELSE 'Poor' END AS ReliabilityTier,
+    CASE q WHEN 1 THEN 3 WHEN 2 THEN 2 WHEN 3 THEN 2 ELSE 1 END AS TierCriticality
+  FROM ranked;
 `);
 
 // Flight Delay Severity Distribution
@@ -122,7 +125,7 @@ run('MFlightDelayClassification', `
     SELECT 'Critical', 5, count(*), round(avg(ArrDelayMinutes), 1), 1
     FROM ${SRC} WHERE Cancelled = 0 AND ArrDelayMinutes > 120
     UNION ALL
-    SELECT 'Cancelled', 6, count(*), 0, 1
+    SELECT 'Cancelled', 6, count(*), NULL, 1
     FROM ${SRC} WHERE Cancelled = 1
   )
   SELECT Category, FlightCount,

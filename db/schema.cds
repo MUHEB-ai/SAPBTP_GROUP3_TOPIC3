@@ -124,6 +124,7 @@ entity MCarrierClassification {
       OnTimePct        : Decimal(5,1);
       CancellationPct  : Decimal(5,1);
       AvgArrDelay      : Decimal(6,1);
+      Score            : Decimal(5,1);
       ReliabilityTier  : String(15);   // Excellent, Good, AtRisk, Poor
       TierCriticality  : Integer;      // 3=green, 2=yellow, 1=red, 0=grey
 }

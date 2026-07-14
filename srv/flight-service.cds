@@ -125,6 +125,7 @@ annotate FlightService.CarrierClassification with @(
   UI.LineItem: [
     { Value: Airline,         Label: 'Airline Code' },
     { Value: ReliabilityTier, Label: 'Reliability Tier', Criticality: TierCriticality },
+    { Value: Score,           Label: 'Reliability Score' },
     { Value: OnTimePct,       Label: 'On-Time %' },
     { Value: CancellationPct, Label: 'Cancellation %' },
     { Value: AvgArrDelay,     Label: 'Avg Arrival Delay (min)' },
