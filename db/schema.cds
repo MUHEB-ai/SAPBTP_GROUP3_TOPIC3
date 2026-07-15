@@ -137,6 +137,29 @@ entity MFlightDelayClassification {
       Criticality      : Integer;
 }
 
+entity MDelayCauseByTime {
+  key TimeBlock        : String(6);
+      CarrierMin       : Integer;
+      WeatherMin       : Integer;
+      NASMin           : Integer;
+      LateAircraftMin  : Integer;
+      SecurityMin      : Integer;
+}
+entity MDelayCauseByMonth {
+  key Month            : Integer;
+      CarrierMin       : Integer;
+      WeatherMin       : Integer;
+      NASMin           : Integer;
+      LateAircraftMin  : Integer;
+      SecurityMin      : Integer;
+}
+entity MDelayByDuration {
+  key DurationBand     : String(20);
+      FlightCount      : Integer;
+      AvgArrDelay      : Decimal(6,1);
+      DelayedPct       : Decimal(5,1);
+}
+
 // ===== Task 4: AI Integration =====
 
 entity AIAuditReports {

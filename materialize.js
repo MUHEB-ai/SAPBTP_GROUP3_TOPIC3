@@ -134,8 +134,74 @@ run('MFlightDelayClassification', `
   FROM cats ORDER BY SortKey;
 `);
 
+// ===== TASK 3: Association / Root-Cause Analysis =====
+
+// Delay cause contribution by time-of-day block
+run('MDelayCauseByTime', `
+  DELETE FROM flightaudit_MDelayCauseByTime;
+  INSERT INTO flightaudit_MDelayCauseByTime
+  SELECT
+    substr(DepTimeBlk, 1, 2) AS TimeBlock,
+    round(sum(CarrierDelay), 0)      AS CarrierMin,
+    round(sum(WeatherDelay), 0)      AS WeatherMin,
+    round(sum(NASDelay), 0)          AS NASMin,
+    round(sum(LateAircraftDelay), 0) AS LateAircraftMin,
+    round(sum(SecurityDelay), 0)     AS SecurityMin
+  FROM ${SRC}
+  WHERE Cancelled = 0 AND DepTimeBlk IS NOT NULL AND DepTimeBlk <> ''
+  GROUP BY substr(DepTimeBlk, 1, 2)
+  ORDER BY TimeBlock;
+`);
+
+// Delay cause contribution by month
+run('MDelayCauseByMonth', `
+  DELETE FROM flightaudit_MDelayCauseByMonth;
+  INSERT INTO flightaudit_MDelayCauseByMonth
+  SELECT
+    Month,
+    round(sum(CarrierDelay), 0)      AS CarrierMin,
+    round(sum(WeatherDelay), 0)      AS WeatherMin,
+    round(sum(NASDelay), 0)          AS NASMin,
+    round(sum(LateAircraftDelay), 0) AS LateAircraftMin,
+    round(sum(SecurityDelay), 0)     AS SecurityMin
+  FROM ${SRC}
+  WHERE Cancelled = 0
+  GROUP BY Month
+  ORDER BY Month;
+`);
+
+// Delay behavior by scheduled-duration band
+run('MDelayByDuration', `
+  DELETE FROM flightaudit_MDelayByDuration;
+  INSERT INTO flightaudit_MDelayByDuration
+  WITH banded AS (
+    SELECT
+      CASE
+        WHEN CRSElapsedTime < 120 THEN 'Short (<2h)'
+        WHEN CRSElapsedTime < 240 THEN 'Medium (2-4h)'
+        ELSE 'Long (>4h)'
+      END AS DurationBand,
+      CASE
+        WHEN CRSElapsedTime < 120 THEN 1
+        WHEN CRSElapsedTime < 240 THEN 2
+        ELSE 3
+      END AS SortKey,
+      ArrDelayMinutes, ArrDel15
+    FROM ${SRC}
+    WHERE Cancelled = 0 AND CRSElapsedTime IS NOT NULL
+  )
+  SELECT
+    DurationBand,
+    count(*) AS FlightCount,
+    round(avg(ArrDelayMinutes), 1) AS AvgArrDelay,
+    round(sum(ArrDel15) * 100.0 / nullif(count(*), 0), 1) AS DelayedPct
+  FROM banded
+  GROUP BY DurationBand, SortKey
+  ORDER BY SortKey;
+`);
+
 ['MAirlineKPIs','MMonthlyKPIs','MWeekdayKPIs','MBrandVsOperator',
- 'MCarrierClassification','MFlightDelayClassification'].forEach(t => {
+ 'MCarrierClassification','MFlightDelayClassification','MDelayCauseByTime','MDelayCauseByMonth','MDelayByDuration'].forEach(t => {
   const n = db.prepare(`SELECT count(*) c FROM flightaudit_${t}`).get().c;
   console.log(`  ${t}: ${n} Zeilen`);
 });

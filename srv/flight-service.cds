@@ -12,6 +12,9 @@ service FlightService {
   @readonly entity BrandVsOperator as projection on fa.MBrandVsOperator;
   @readonly entity CarrierClassification      as projection on fa.MCarrierClassification;
   @readonly entity FlightDelayClassification  as projection on fa.MFlightDelayClassification;
+  @readonly entity DelayCauseByTime   as projection on fa.MDelayCauseByTime;
+  @readonly entity DelayCauseByMonth  as projection on fa.MDelayCauseByMonth;
+  @readonly entity DelayByDuration    as projection on fa.MDelayByDuration;
 
   entity AIAuditReports as projection on fa.AIAuditReports;
 
@@ -146,6 +149,58 @@ annotate FlightService.FlightDelayClassification with @(
     { Value: Percentage,  Label: '% of All Flights' },
     { Value: AvgDelay,    Label: 'Avg Delay (min)' }
   ]
+);
+
+annotate FlightService.DelayByDuration with @(
+  UI.HeaderInfo: { TypeName: 'Duration Band', TypeNamePlural: 'Delay by Flight Duration' },
+  UI.LineItem: [
+    { Value: DurationBand, Label: 'Scheduled Duration' },
+    { Value: FlightCount,  Label: 'Number of Flights' },
+    { Value: AvgArrDelay,  Label: 'Avg Arrival Delay (min)' },
+    { Value: DelayedPct,   Label: 'Delayed >15min (%)' }
+  ],
+  UI.Chart: {
+    ChartType: #Column,
+    Dimensions: [DurationBand],
+    Measures: [AvgArrDelay],
+    Title: 'Average Delay by Flight Duration'
+  }
+);
+
+annotate FlightService.DelayCauseByMonth with @(
+  UI.HeaderInfo: { TypeName: 'Month', TypeNamePlural: 'Delay Causes by Month' },
+  UI.LineItem: [
+    { Value: Month,           Label: 'Month' },
+    { Value: CarrierMin,      Label: 'Carrier (min)' },
+    { Value: WeatherMin,      Label: 'Weather (min)' },
+    { Value: NASMin,          Label: 'Air System / NAS (min)' },
+    { Value: LateAircraftMin, Label: 'Late Aircraft (min)' },
+    { Value: SecurityMin,     Label: 'Security (min)' }
+  ],
+  UI.Chart: {
+    ChartType: #Column,
+    Dimensions: [Month],
+    Measures: [CarrierMin, WeatherMin, NASMin, LateAircraftMin],
+    Title: 'Delay Cause Contribution by Month'
+  }
+);
+
+annotate FlightService.DelayCauseByTime with @(
+  UI.HeaderInfo: { TypeName: 'Time Block', TypeNamePlural: 'Delay Causes by Time of Day' },
+  UI.LineItem: [
+    { Value: TimeBlock,       Label: 'Departure Hour' },
+    { Value: CarrierMin,      Label: 'Carrier (min)' },
+    { Value: WeatherMin,      Label: 'Weather (min)' },
+    { Value: NASMin,          Label: 'Air System / NAS (min)' },
+    { Value: LateAircraftMin, Label: 'Late Aircraft (min)' },
+    { Value: SecurityMin,     Label: 'Security (min)' }
+  ],
+  UI.Chart: {
+    ChartType: #Column,
+    Dimensions: [TimeBlock],
+    Measures: [CarrierMin, WeatherMin, NASMin, LateAircraftMin],
+    Title: 'Delay Cause Contribution by Time of Day'
+  }
 );
 
 // --- AIAuditReports ---
