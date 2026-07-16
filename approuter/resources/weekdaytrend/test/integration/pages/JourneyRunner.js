@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/JourneyRunner","ns/weekdaytrend/test/integration/pages/WeekdayKPIsList","ns/weekdaytrend/test/integration/pages/WeekdayKPIsObjectPage"],function(e,t,n){"use strict";var s=new e({launchUrl:sap.ui.require.toUrl("ns/weekdaytrend")+"/test/flp.html#app-preview",pages:{onTheWeekdayKPIsList:t,onTheWeekdayKPIsObjectPage:n},async:true});return s});
+//# sourceMappingURL=JourneyRunner.js.map

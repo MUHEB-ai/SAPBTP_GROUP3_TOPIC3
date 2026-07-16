@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/JourneyRunner","ns/airlinedashboard/test/integration/pages/AirlineKPIsList","ns/airlinedashboard/test/integration/pages/AirlineKPIsObjectPage"],function(e,i,n){"use strict";var s=new e({launchUrl:sap.ui.require.toUrl("ns/airlinedashboard")+"/test/flp.html#app-preview",pages:{onTheAirlineKPIsList:i,onTheAirlineKPIsObjectPage:n},async:true});return s});
+//# sourceMappingURL=JourneyRunner.js.map

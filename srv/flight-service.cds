@@ -10,6 +10,17 @@ service FlightService {
   @readonly entity MonthlyKPIs     as projection on fa.MMonthlyKPIs;
   @readonly entity WeekdayKPIs     as projection on fa.MWeekdayKPIs;
   @readonly entity BrandVsOperator as projection on fa.MBrandVsOperator;
+  @readonly entity CarrierClassification      as projection on fa.MCarrierClassification;
+  @readonly entity FlightDelayClassification  as projection on fa.MFlightDelayClassification;
+  @readonly entity DelayCauseByTime   as projection on fa.MDelayCauseByTime;
+  @readonly entity DelayCauseByMonth  as projection on fa.MDelayCauseByMonth;
+  @readonly entity DelayByDuration    as projection on fa.MDelayByDuration;
+
+  entity AIAuditReports as projection on fa.AIAuditReports;
+
+  action analyzeDelay(airline: String, delayScenario: String) returns String;
+  action generateRecovery(airline: String, reliabilityTier: String, delayType: String) returns String;
+  action generateCarrierReport(airline: String) returns String;
 }
 
 // ===== analytische Annotationen (für die ALPs) =====
@@ -102,3 +113,132 @@ annotate FlightService.BrandVsOperator with {
   TotalFlights    @Analytics.Measure @Aggregation.default: #SUM;
   DelayedArrivals @Analytics.Measure @Aggregation.default: #SUM;
 };
+
+annotate FlightService.AirlineKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
+annotate FlightService.MonthlyKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
+annotate FlightService.WeekdayKPIs     with { DelayedArrivals @title: 'Delayed Arrivals'; };
+annotate FlightService.BrandVsOperator with { DelayedArrivals @title: 'Delayed Arrivals'; };
+
+// --- CarrierClassification ---
+annotate FlightService.CarrierClassification with @(
+  UI.HeaderInfo: {
+    TypeName: 'Carrier',
+    TypeNamePlural: 'Carrier Classification'
+  },
+  UI.LineItem: [
+    { Value: Airline,         Label: 'Airline Code' },
+    { Value: ReliabilityTier, Label: 'Reliability Tier', Criticality: TierCriticality },
+    { Value: Score,           Label: 'Reliability Score' },
+    { Value: OnTimePct,       Label: 'On-Time %' },
+    { Value: CancellationPct, Label: 'Cancellation %' },
+    { Value: AvgArrDelay,     Label: 'Avg Arrival Delay (min)' },
+    { Value: TotalFlights,    Label: 'Total Flights' }
+  ],
+  UI.SelectionFields: [ Airline, ReliabilityTier ]
+);
+
+// --- FlightDelayClassification ---
+annotate FlightService.FlightDelayClassification with @(
+  UI.HeaderInfo: {
+    TypeName: 'Delay Category',
+    TypeNamePlural: 'Flight Delay Classification'
+  },
+  UI.LineItem: [
+    { Value: Category,    Label: 'Delay Category', Criticality: Criticality },
+    { Value: FlightCount, Label: 'Number of Flights' },
+    { Value: Percentage,  Label: '% of All Flights' },
+    { Value: AvgDelay,    Label: 'Avg Delay (min)' }
+  ]
+);
+
+annotate FlightService.DelayByDuration with @(
+  UI.HeaderInfo: { TypeName: 'Duration Band', TypeNamePlural: 'Delay by Flight Duration' },
+  UI.LineItem: [
+    { Value: DurationBand, Label: 'Scheduled Duration' },
+    { Value: FlightCount,  Label: 'Number of Flights' },
+    { Value: AvgArrDelay,  Label: 'Avg Arrival Delay (min)' },
+    { Value: DelayedPct,   Label: 'Delayed >15min (%)' }
+  ],
+  UI.Chart: {
+    ChartType: #Column,
+    Dimensions: [DurationBand],
+    Measures: [AvgArrDelay],
+    Title: 'Average Delay by Flight Duration'
+  }
+);
+
+annotate FlightService.DelayCauseByMonth with @(
+  UI.HeaderInfo: { TypeName: 'Month', TypeNamePlural: 'Delay Causes by Month' },
+  UI.LineItem: [
+    { Value: Month,           Label: 'Month' },
+    { Value: CarrierMin,      Label: 'Carrier (min)' },
+    { Value: WeatherMin,      Label: 'Weather (min)' },
+    { Value: NASMin,          Label: 'Air System / NAS (min)' },
+    { Value: LateAircraftMin, Label: 'Late Aircraft (min)' },
+    { Value: SecurityMin,     Label: 'Security (min)' }
+  ],
+  UI.Chart: {
+    ChartType: #Column,
+    Dimensions: [Month],
+    Measures: [CarrierMin, WeatherMin, NASMin, LateAircraftMin],
+    Title: 'Delay Cause Contribution by Month'
+  }
+);
+
+annotate FlightService.DelayCauseByTime with @(
+  UI.HeaderInfo: { TypeName: 'Time Block', TypeNamePlural: 'Delay Causes by Time of Day' },
+  UI.LineItem: [
+    { Value: TimeBlock,       Label: 'Departure Hour' },
+    { Value: CarrierMin,      Label: 'Carrier (min)' },
+    { Value: WeatherMin,      Label: 'Weather (min)' },
+    { Value: NASMin,          Label: 'Air System / NAS (min)' },
+    { Value: LateAircraftMin, Label: 'Late Aircraft (min)' },
+    { Value: SecurityMin,     Label: 'Security (min)' }
+  ],
+  UI.Chart: {
+    ChartType: #Column,
+    Dimensions: [TimeBlock],
+    Measures: [CarrierMin, WeatherMin, NASMin, LateAircraftMin],
+    Title: 'Delay Cause Contribution by Time of Day'
+  }
+);
+
+// --- AIAuditReports ---
+annotate FlightService.AIAuditReports with @(
+  UI.HeaderInfo: {
+    TypeName: 'AI Audit Report',
+    TypeNamePlural: 'AI Audit Reports',
+    Title: { Value: Airline },
+    Description: { Value: DelayScenario }
+  },
+  UI.CreateHidden: false,
+  Capabilities.InsertRestrictions: { Insertable: true },
+  UI.LineItem: [
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'FlightService.EntityContainer/analyzeDelay',
+      Label: 'Analyze Delay'
+    },
+    { Value: Airline,         Label: 'Airline' },
+    { Value: ReliabilityTier, Label: 'Tier' },
+    { Value: DelayScenario,   Label: 'Delay Scenario' },
+    { Value: CreatedAt,       Label: 'Created' }
+  ],
+  UI.Facets: [
+    { $Type: 'UI.ReferenceFacet', Label: 'Delay Input', Target: '@UI.FieldGroup#Input' },
+    { $Type: 'UI.ReferenceFacet', Label: 'AI Reasoning', Target: '@UI.FieldGroup#AIReasoning' },
+    { $Type: 'UI.ReferenceFacet', Label: 'Recovery Strategy', Target: '@UI.FieldGroup#Recovery' }
+  ],
+  UI.FieldGroup#Input: {
+    Data: [
+      { Value: Airline, Label: 'Airline Code' },
+      { Value: DelayScenario, Label: 'Describe the Delay Scenario' }
+    ]
+  },
+  UI.FieldGroup#AIReasoning: {
+    Data: [{ Value: AIReasoning, Label: 'AI Analysis' }]
+  },
+  UI.FieldGroup#Recovery: {
+    Data: [{ Value: RecoveryStrategy, Label: 'Recovery Recommendations' }]
+  }
+);

@@ -1,0 +1,2 @@
+sap.ui.define(["sap/fe/test/JourneyRunner","ns/monthlytrend/test/integration/pages/MonthlyKPIsList","ns/monthlytrend/test/integration/pages/MonthlyKPIsObjectPage"],function(t,e,n){"use strict";var s=new t({launchUrl:sap.ui.require.toUrl("ns/monthlytrend")+"/test/flp.html#app-preview",pages:{onTheMonthlyKPIsList:e,onTheMonthlyKPIsObjectPage:n},async:true});return s});
+//# sourceMappingURL=JourneyRunner.js.map

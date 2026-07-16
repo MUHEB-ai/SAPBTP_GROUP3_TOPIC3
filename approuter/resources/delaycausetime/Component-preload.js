@@ -1,0 +1,6 @@
+//@ui5-bundle ns/delaycausetime/Component-preload.js
+sap.ui.predefine("ns/delaycausetime/Component", ["sap/fe/core/AppComponent"],function(e){"use strict";return e.extend("ns.delaycausetime.Component",{metadata:{manifest:"json"}})});
+sap.ui.require.preload({
+	"ns/delaycausetime/manifest.json":'{"_version":"1.48.0","sap.app":{"id":"ns.delaycausetime","type":"application","title":"Delay Cause by Time of Day","description":"Root-cause analysis by departure hour","dataSources":{"mainService":{"uri":"/odata/v4/flight/","type":"OData","settings":{"odataVersion":"4.0"}}}},"sap.ui5":{"dependencies":{"minUI5Version":"1.120.0","libs":{"sap.m":{},"sap.fe.templates":{}}},"models":{"":{"dataSource":"mainService","preload":true,"settings":{"operationMode":"Server","autoExpandSelect":true,"earlyRequests":true}}},"routing":{"routes":[{"pattern":":?query:","name":"DelayCauseByTimeList","target":"DelayCauseByTimeList"}],"targets":{"DelayCauseByTimeList":{"type":"Component","id":"DelayCauseByTimeList","name":"sap.fe.templates.ListReport","options":{"settings":{"entitySet":"DelayCauseByTime","initialLoad":"Enabled"}}}}},"flexBundle":false}}'
+});
+//# sourceMappingURL=Component-preload.js.map

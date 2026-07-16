@@ -30,3 +30,9 @@ db/data/
 # SQLite WAL/SHM
 *.sqlite-shm
 *.sqlite-wal
+
+_archive_raw_csv/
+
+# UI5 build output (regenerable via ui5 build)
+app/*/dist/
+regen-carrier.js
