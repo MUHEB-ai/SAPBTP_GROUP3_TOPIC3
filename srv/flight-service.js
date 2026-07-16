@@ -104,7 +104,7 @@ async function callLLAMA(prompt) {
     const tokenRes = await fetch('https://btpailearning.authentication.us10.hana.ondemand.com/oauth/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'grant_type=client_credentials&client_id=sb-6a3dc4ad-b8b6-4291-ba47-f83bde33d590!b564356|aicore!b164&client_secret=45db75f1-e067-42eb-94b3-f085511c1801$BJyItLi3-yM9hU8Cu0DG28_8e9tPBtd-7AkVFKk_2Z8='
+      body: 'grant_type=client_credentials&client_id=' + encodeURIComponent(process.env.AICORE_CLIENT_ID) + '&client_secret=' + encodeURIComponent(process.env.AICORE_CLIENT_SECRET)
     });
     const tokenData = await tokenRes.json();
     const token = tokenData.access_token;
